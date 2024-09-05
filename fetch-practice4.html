@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Search App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      #bookList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .book {
+        border: 1px solid #ddd;
+        padding: 10px;
+        width: 200px;
+      }
+      .book img {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Book Search App</h1>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Enter book title or author"
+    />
+    <button onclick="searchBooks()">Search Books</button>
+    <div id="bookList"></div>
+
+    <script>
+      async function searchBooks() {
+        const query = document.getElementById("searchInput").value;
+        const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+          query
+        )}`;
+
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          displayBooks(data.items);
+        } catch (error) {
+          console.error(
+            "There was a problem with the fetch operation:",
+            error.message
+          );
+          document.getElementById(
+            "bookList"
+          ).innerHTML = `An error occurred: ${error.message}`;
+        }
+      }
+
+      function displayBooks(books) {
+        const bookList = document.getElementById("bookList");
+        bookList.innerHTML = "";
+
+        if (!books || books.length === 0) {
+          bookList.innerHTML = "No books found.";
+          return;
+        }
+
+        books.forEach((book) => {
+          const bookInfo = book.volumeInfo;
+          const bookElement = document.createElement("div");
+          bookElement.className = "book";
+          bookElement.innerHTML = `
+                    <img src="${
+                      bookInfo.imageLinks?.thumbnail ||
+                      "https://via.placeholder.com/128x192.png?text=No+Cover"
+                    }" alt="Book cover">
+                    <h3>${bookInfo.title}</h3>
+                    <p>Author(s): ${
+                      bookInfo.authors ? bookInfo.authors.join(", ") : "Unknown"
+                    }</p>
+                    <p>Published: ${bookInfo.publishedDate || "Unknown"}</p>
+                `;
+          bookList.appendChild(bookElement);
+        });
+      }
+    </script>
+  </body>
+</html>
